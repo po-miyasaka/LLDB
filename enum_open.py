@@ -14,7 +14,6 @@ def handle_command(debugger, command, result, internal_dict):
     '''
     Documentation for how to use enum_open goes here 
     '''
-
     command_args = shlex.split(command, posix=False)
     parser = generateOptionParser()
     try:
@@ -22,7 +21,7 @@ def handle_command(debugger, command, result, internal_dict):
     except:
         result.SetError(parser.usage)
         return
-
+    
     ### Debugger Info ###
     target = debugger.GetSelectedTarget()
     process = target.GetProcess()
@@ -38,6 +37,10 @@ def handle_command(debugger, command, result, internal_dict):
     objc_options_o = lldb.SBExpressionOptions()
     objc_options_o.SetLanguage(lldb.eLanguageTypeObjC)
     objc_options_o.SetCoerceResultToId()
+    num = 0
+    if options.number:
+        num = options.number
+    print(num)
     enum_name = command
     print ("name:")
     print (enum_name)
@@ -67,32 +70,38 @@ def handle_command(debugger, command, result, internal_dict):
         tmp = re.sub("\(|\)", "", raw_type)
         types = re.split(r',', tmp)
         print(types)
-    
-    exp = r"""
-    let h: (() -> Any?) = {
-    if case .{0}({1}) = self.{2} {
-        return {3}
-        }
-        return nil
-    }
-    (h() as! {4})
-    """
 
-    result.AppendMessage('Hello! the enum_open command is working!')
+    params =  map(lambda (i, type): pack(i = i,t = type), enumerate(types) )
+    print("param")
+    print(params)
+    parameters = ",".join(params)
+    print("parameters")
+    print(parameters)
+    exp ="let h: (() -> Any?) = {{ if case .{0}({1}) = {2} {{return v{3} }}return nil}}; h() as! {4}".format(variant_name, parameters,  enum_name, num, types[num])
+    print(exp)
 
+    res = lldb.SBCommandReturnObject()
+    debugger.GetCommandInterpreter().HandleCommand("expression -lswift -g -O -- {0} ".format(exp), res)
+    if res.GetError():
+        raise AssertionError("Uhoh... something went wrong, can you figure it out? :]")
+    elif not res.HasResult():
+        raise AssertionError("There's no result. Womp womp....")
+
+    result.AppendMessage(res.GetOutput())
+
+def pack(i, t):
+    r = "let v" + str(i) + ":" + str(t)
+    print("pack")
+    print(r)
+    return r
 
 def generateOptionParser():
     usage = "usage: %prog [options] TODO Description Here :]"
     parser = optparse.OptionParser(usage=usage, prog="enum_open")
-    parser.add_option("-m", "--module",
+    parser.add_option("-n", "--num",
                       action="store",
                       default=None,
-                      dest="module",
+                      dest="number",
                       help="This is a placeholder option to show you how to use options with strings")
-    parser.add_option("-c", "--check_if_true",
-                      action="store_true",
-                      default=False,
-                      dest="store_true",
-                      help="This is a placeholder option to show you how to use options with bools")
     return parser
     
