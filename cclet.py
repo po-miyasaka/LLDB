@@ -8,11 +8,11 @@ def __lldb_init_module(debugger, internal_dict):
 def handle_command(debugger, command, result, internal_dict):
     
     ### Command Parse ###
-    command_args = re.split(r'(\.|\=)', command)
+    command_args = re.split(r'(\.|\=\s*)', command)
     instance = command_args[0].strip()
     member = command_args[2].strip()
     new_value = command_args[4].strip()
-    new_value_length = len(new_value)
+    new_value_length = len(new_value) -2
     
     print (new_value)
     print (new_value_length)
@@ -25,6 +25,10 @@ def handle_command(debugger, command, result, internal_dict):
     swift_options.SetLanguage(lldb.eLanguageTypeSwift)
     objc_options = lldb.SBExpressionOptions()
     objc_options.SetLanguage(lldb.eLanguageTypeObjC)
+    
+    objc_options_o = lldb.SBExpressionOptions()
+    objc_options_o.SetLanguage(lldb.eLanguageTypeObjC)
+    objc_options_o.SetCoerceResultToId()
    
     ###  extract instance & member ###
     class_info_expression = '{}'.format(instance)
@@ -34,18 +38,14 @@ def handle_command(debugger, command, result, internal_dict):
     
     ### Change String Value ###
     old_value_expression = '*(char**)({0})'.format(member_string_addr)
-    old_value = frame.EvaluateExpression(old_value_expression, objc_options)
-    print(new_value)
-    change_value_expression = "exp -l objc -o -- {0} = (char *){1}".format(old_value.name, new_value)
-    debugger.HandleCommand(change_value_expression)
+    change_value_expression = "{0} = {1}".format(old_value_expression, new_value)
+    frame.EvaluateExpression(change_value_expression, objc_options_o)
     
     ### Change Length ###
     
     old_len_expression = '*(int**)({0})'.format(( member_info.GetChildAtIndex(0).GetChildAtIndex(1).location))
     
-    print(old_len_expression)
-    old_len = frame.EvaluateExpression(old_len_expression, objc_options)
-    change_len_expression = 'exp -l objc -o -- {0} = (int*){1}'.format(old_len.name, new_value_length)
+    change_len_expression = 'exp -l objc -o -- {0} = (int*){1}'.format(old_len_expression, new_value_length)
     debugger.HandleCommand(change_len_expression)
     
     result.AppendMessage('')
