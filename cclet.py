@@ -43,9 +43,9 @@ def handle_command(debugger, command, result, internal_dict):
     
     ### Change Length ###
     
-    old_len_expression = '*(int**)({0})'.format(( member_info.GetChildAtIndex(0).GetChildAtIndex(1).location))
+    old_len_expression = '*(int*)({0})'.format(( member_info.GetChildAtIndex(0).GetChildAtIndex(1).location))
     
-    change_len_expression = 'exp -l objc -o -- {0} = (int*){1}'.format(old_len_expression, new_value_length)
+    change_len_expression = 'exp -l objc -o -- {0} = (int){1}'.format(old_len_expression, new_value_length)
     debugger.HandleCommand(change_len_expression)
     
     result.AppendMessage('')
