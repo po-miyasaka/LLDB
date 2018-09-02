@@ -12,7 +12,6 @@ command script import /<PATH>/enum_open.py
 # USAGE
 ## cclet.py
  * SwiftClassのletで定義された、任意のString型のメンバーの文字列を変更できる
-in lldb console
 ```
 (lldb) <instanceName>.<targetLetMember> = "hogehoge"
 ```
@@ -20,7 +19,6 @@ in lldb console
 ## enum.py
  * Enumの付属値を取得する。
  * タプルのように付属値の番号を指定する必要がある。
-in lldb console
 ```
 (lldb) enum_open <enum With AttValue>.0
 ```
