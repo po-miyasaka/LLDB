@@ -1,4 +1,5 @@
 
+
 ## import 
  in `~/.lldbinit`
 ```
@@ -28,4 +29,6 @@ in lldb console
 * メソッドの返り値の型がレジスタに格納できる値の場合に、任意の値にすることができる。ブレークポイントをONにしておく必要がある。
 <img width="1173" alt="screen shot 2018-09-02 at 9 53 18" src="https://user-images.githubusercontent.com/14083051/44951112-28f0d780-ae96-11e8-860d-0f0b844785e2.png">
 
-
+# etc
+* Xcode9.4.1にて動作確認しました。
+* プロトタイプなのでバグがあります。使用は自己責任でお願いします。m(_ _)m
