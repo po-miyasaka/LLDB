@@ -7,22 +7,12 @@ import optparse
 import re
 
 def __lldb_init_module(debugger, internal_dict):
-    debugger.HandleCommand(
-    'command script add -f enum_open.handle_command enum_open')
+    debugger.HandleCommand('command script add -f enum_open.handle_command enum_open')
 
 def handle_command(debugger, command, result, internal_dict):
-    '''
-    Documentation for how to use enum_open goes here 
-    '''
-    command_args = shlex.split(command, posix=False)
-    parser = generateOptionParser()
-    try:
-        (options, args) = parser.parse_args(command_args)
-    except:
-        result.SetError(parser.usage)
-        return
-    
-    ### Debugger Info ###
+
+
+    # template
     target = debugger.GetSelectedTarget()
     process = target.GetProcess()
     thread = process.GetSelectedThread()
@@ -30,78 +20,75 @@ def handle_command(debugger, command, result, internal_dict):
 
     swift_options = lldb.SBExpressionOptions()
     swift_options.SetLanguage(lldb.eLanguageTypeSwift)
-
+    
     objc_options = lldb.SBExpressionOptions()
     objc_options.SetLanguage(lldb.eLanguageTypeObjC)
-
+    
     objc_options_o = lldb.SBExpressionOptions()
     objc_options_o.SetLanguage(lldb.eLanguageTypeObjC)
     objc_options_o.SetCoerceResultToId()
-    num = 0
-    if options.number:
-        num = options.number
-    print(num)
-    enum_name = command
-    print ("name:")
-    print (enum_name)
-    enum = frame.EvaluateExpression("{0}".format(enum_name))
-    print("baseenum:")
-    print(enum)
-    variant_name = enum.value
-    print("variant_name:")
-    print(variant_name)
-    enum_info = enum.GetValueForExpressionPath('.' + variant_name)
-    print("enuminfo:")
-    print(enum_info)
-    att_count = enum_info.GetNumChildren()
 
-    print("att_count")
-    print(att_count)
-    types = []
+
+
+    command_args = re.split(r'\.', command)
+    if len(command_args) > 0:
+        enum = frame.EvaluateExpression(command)
+    else:
+        enum = frame.FindVariable(command)
+
+    if "Swift.Optional" in enum.type.name:
+        print("Please forceunwrap target value")
+        return False
+
+
+
+    variant_name = enum.value
+    enum_types = enum.GetChildAtIndex(0).type.name
+    att_count = enum.GetChildAtIndex(0).GetNumChildren()
+
     if att_count == 0:
-        print("no att_value")
+        print(variant_name)
         return False
     elif att_count == 1:
-        types.append(enum_info.type.name)
-        print(types)
+        tmp = re.sub("\(|\)", "", enum_types)
+        types = map(lambda t: remove_label(t), [tmp])
     else:
-        raw_type = enum_info.type.name
-        print(raw_type)
-        tmp = re.sub("\(|\)", "", raw_type)
-        types = re.split(r',', tmp)
-        print(types)
+        tmp = re.sub("\(|\)", "", enum_types)
+        types = map(lambda t: remove_label(t)  , re.split(r',', tmp))
 
-    params =  map(lambda (i, type): pack(i = i,t = type), enumerate(types) )
-    print("param")
-    print(params)
+    return_params = map(lambda (i, type): format_parameters(i), enumerate(types))
+    params =        map(lambda param: add_let(param), return_params)
     parameters = ",".join(params)
-    print("parameters")
-    print(parameters)
-    exp ="let h: (() -> Any?) = {{ if case .{0}({1}) = {2} {{return v{3} }}return nil}}; h() as! {4}".format(variant_name, parameters,  enum_name, num, types[num])
-    print(exp)
+    return_parameters = ",".join(return_params)
 
-    res = lldb.SBCommandReturnObject()
-    debugger.GetCommandInterpreter().HandleCommand("expression -lswift -g -O -- {0} ".format(exp), res)
-    if res.GetError():
-        raise AssertionError("Uhoh... something went wrong, can you figure it out? :]")
-    elif not res.HasResult():
-        raise AssertionError("There's no result. Womp womp....")
 
-    result.AppendMessage(res.GetOutput())
+    exp = """
+let h: (() -> Any?) = {{ 
+    if case .{0}({1}) = {2} {{
+         return ({3})
+    }};
+return nil
+}};
 
-def pack(i, t):
-    r = "let v" + str(i) + ":" + str(t)
-    print("pack")
-    print(r)
+return (h() as! {4})
+"""\
+        .format(variant_name, parameters,  command, return_parameters, enum_types)
+    result = frame.EvaluateExpression(exp, swift_options)
+    print(enum.type.name + "." + variant_name + result.type.name)
+    print(result.path)
+
+
+def format_parameters(i):
+    r = "v" + str(i)
     return r
 
-def generateOptionParser():
-    usage = "usage: %prog [options] TODO Description Here :]"
-    parser = optparse.OptionParser(usage=usage, prog="enum_open")
-    parser.add_option("-n", "--num",
-                      action="store",
-                      default=None,
-                      dest="number",
-                      help="This is a placeholder option to show you how to use options with strings")
-    return parser
-    
+def add_let(str):
+    r = "let " + str
+    return r
+
+
+def remove_label(str):
+    if ':' in str:
+        return re.split(r':', str)[1]
+    else:
+        return str
