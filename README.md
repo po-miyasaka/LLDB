@@ -6,6 +6,7 @@
 command script import /<PATH>/cclet.py
 command script import /<PATH>/preturn.py
 command script import /<PATH>/enum_open.py
+command script import /<PATH>/vinfo.py
 ```
 
 
