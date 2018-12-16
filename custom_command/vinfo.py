@@ -20,8 +20,10 @@ def handle_command(debugger, command, result, internal_dict):
     process = target.GetProcess()
     thread = process.GetSelectedThread()
     frame = thread.GetSelectedFrame()
+
     swift_options = lldb.SBExpressionOptions()
     swift_options.SetLanguage(lldb.eLanguageTypeSwift)
+
     objc_options = lldb.SBExpressionOptions()
     objc_options.SetLanguage(lldb.eLanguageTypeObjC)
     
@@ -44,13 +46,14 @@ def handle_command(debugger, command, result, internal_dict):
     class_name = class_name_result.GetOutput().strip()
     class_name_splited = re.split(r'(\.)', class_name)
     print("type lookup " + class_name)
-    res = ""
     if len(class_name_splited) == 3: # Swift
-        import_exp = 'import {0}'.format(target.executable.basename)
+        exp_import = 'import {0}'.format(target.executable.basename)
         exp_swift = 'unsafeBitCast({0}, to: {1}.self)'.format(address, class_name)
-        res = frame.EvaluateExpression("{0};{1}".format(import_exp, exp_swift), swift_options)
+        frame.EvaluateExpression(exp_import, swift_options)
+        res = frame.EvaluateExpression(exp_swift, swift_options)
         print("Use in swift context")
+        print(res.path)
     else: # Objective-C
         res = frame.EvaluateExpression("{0}".format(command), objc_options_o)
         print("Use in objc context")
-    print(res.path)
+        print(res.path)
