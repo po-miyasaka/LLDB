@@ -31,10 +31,29 @@ $R170   　　　　　　　　　　　　　　　　　　　　　　// コ
 ```
 
 ## enum_open.py
- * Enumの付属値を取得する。
+### 概要
+ * コンソール上で簡単にenumの付属値を取り出す。
 	* 付属値が２つ以上の場合 Tupleとして取得できる。
+	
+### USAGE  
+ *  `enum_open` コマンドに enumの変数を渡す。
+	* インスタンスのメンバーの場合はself.をつける。
+	* Optional型の場合は強制アンラップする必要がある。  
+	
 ```
-(lldb) enum_open <enum with attValue>
+(lldb) enum_open self.hogeEnum!
+Example.MainViewController.Testes.hogeEnum
+((MewExample.EnvironmentMock, (), Swift.String)) // 型情報
+$R140 // コンソールで使える変数
+
+(lldb) po $R140
+▿ 3 elements
+  - .0 : <EnvironmentMock: 0x600002645fa0>
+  - .1 : 0 elements
+  - .2 : "aaaaaaa"
+
+(lldb) po $R140.2
+"aaaaaaa"
 ```
 
 ## preturn.py
