@@ -40,14 +40,16 @@ def handle_command(debugger, command, result, internal_dict):
         print("Please forceunwrap target value")
         return False
 
-
-
     variant_name = enum.value
     enum_types = enum.GetChildAtIndex(0).type.name
     att_count = enum.GetChildAtIndex(0).GetNumChildren()
 
     if att_count == 0:
-        print(variant_name)
+        print(enum.path)
+
+        res = lldb.SBCommandReturnObject()
+        debugger.GetCommandInterpreter().HandleCommand("expression -l swift -o -- {0}".format(enum.path), res)
+        print(res.GetOutput())
         return False
     elif att_count == 1:
         tmp = re.sub("\(|\)", "", enum_types)
@@ -74,7 +76,8 @@ return (h() as! {4})
 """\
         .format(variant_name, parameters,  command, return_parameters, enum_types)
     result = frame.EvaluateExpression(exp, swift_options)
-    print(enum.type.name + "." + variant_name + result.type.name)
+    print(enum.type.name + "." + variant_name) 
+    print(result.type.name)
     print(result.path)
 
 
