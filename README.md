@@ -57,10 +57,17 @@ $R140 // コンソールで使える変数
 ```
 
 
-## delete_current_break
+## cbd
+### 概要
+* current breakpoint (disable | delete)の略
+*  ブレークした時に実行すると、ブレークした原因となるBreakPointを無効にする
+### USAGE
+* Options
+	* -d
+		* BreakPointを削除する 
+	* -c
+		* 実行後にプロセスを再開する。
 
-### 概要＆USAGE
-*  ブレークした時に実行すると、ブレークした原因となるBreakPointを削除する。
 
 ## preturn.py
 * メソッドの返り値の型がレジスタに格納できる値の場合に、任意の値にすることができる。ブレークポイントをONにしておく必要がある。
@@ -72,8 +79,9 @@ $R140 // コンソールで使える変数
 	 * SwiftClassのletで定義された、任意のString型のメンバーの文字列を変更できる
 
 ```
-(lldb) <instanceName>.<targetLetMember> = "hogehoge"
-// ex) hogeInstance.str = "hogehoge"
+(lldb) hogeInstance.str = "hogehoge"
+(lldb) hogeInstantce.str
+"hogehoge"
 ```
 
 # etc
