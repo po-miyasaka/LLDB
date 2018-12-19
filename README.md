@@ -56,6 +56,12 @@ $R140 // コンソールで使える変数
 "aaaaaaa"
 ```
 
+
+## delete_current_break
+
+### 概要＆USAGE
+*  ブレークした時に実行すると、ブレークした原因となるBreakPointを削除する。
+
 ## preturn.py
 * メソッドの返り値の型がレジスタに格納できる値の場合に、任意の値にすることができる。ブレークポイントをONにしておく必要がある。
 <img width="1173" alt="screen shot 2018-09-02 at 9 53 18" src="https://user-images.githubusercontent.com/14083051/44951112-28f0d780-ae96-11e8-860d-0f0b844785e2.png">
