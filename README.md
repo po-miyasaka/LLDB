@@ -1,14 +1,15 @@
 # 概要
-アプリ開発で使えそうなLLDBコマンドを実装しています。
-複数のコマンドを一つのファイル (`pm_lldb_commands.py`)にまとめました。
+アプリ開発で使えそうなLLDBコマンドを実装してます。
+複数のコマンドを一つのファイル (`pm_lldb_commands.py`)にまとめてます。
 
 # import 
- in `~/.lldbinit`
+ * `~/.lldbinit`ファイルを用意して以下を記載すると、デバッグ時に各種コマンドが使えるようになります。
 ```
+# ※ <PATH>部分は任意です。
 command script import /<PATH>/pm_lldb_commands.py
 ```
 
-
+	
 # custom_commands
 ## vinfo
 ### 概要
