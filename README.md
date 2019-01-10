@@ -19,9 +19,6 @@ command script import /<PATH>/pm_lldb_commands.py
 #### UIコンポーネントを変数として出力
 1. consoleに`vinfo`を入力
 2. View Hierarchyの左サイドバーから任意のコンポーネントをコンソールにドラッグしてEnter
-
-3. UIKitライブラリ内に実装されたコンポーネントはデフォルトでObjective-C用の変数として出力するが、
-   `-s`オプションを付与することで、Swiftの変数として出力することができる。
 #### Memory Graphから任意のクラスを変数として出力
 1. consoleに`vinfo`を入力
 2. MemoryGraghの左サイドバーから任意のコンポーネントの**アドレス**をコンソールにドラッグしてEnter
@@ -38,7 +35,7 @@ $R170   　　　　　　　　　　　　　　　　　　　　　　// コ
   - some : <UIView: 0x7f99a3506d30; frame = (0 0; 375 667);    autoresize = W+H; layer = <CALayer: 0x60000240aec0>>    
 ```
 
-####  `-s`コマンドの使用例
+#### Swiftの変数として出力する例
 ```
 (lldb) vinfo ((UIView *)0x7fc140713220) // UIKitライブラリに実装されたコンポーネントはデフォルトでObjective-Cの変数として出力される
 type lookup UIView
