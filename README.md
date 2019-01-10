@@ -1,33 +1,32 @@
 # 概要
-アプリ開発で使えそうなLLDBコマンドを実装してます。  
-複数のコマンドを一つのファイル (`pm_lldb_commands.py`)にまとめてます。
+アプリ開発やデバッグ作業で使えそうなLLDBコマンドをまとめる
+複数のコマンドを一つのファイル (`pm_lldb_commands.py`)に実装している
 
 # インポート方法
-`~/.lldbinit`ファイルを用意して以下を記載してください。  
-デバッグ時に各種コマンドが使えるようになります。(PATH部分は任意です。)
+`~/.lldbinit`ファイルを用意して以下を記載する
+デバッグ時に各種コマンドが使えるようになる(PATH部分は任意)
 
 ```
 command script import /<PATH>/pm_lldb_commands.py
 ```
 
-	
 # 各種コマンドについて
 ## `vinfo`
 ### 概要
-現在メモリ上にあるUIクラスやデータクラスを、デバッグコンソール上で簡単に変数化できる。
+現在メモリ上にあるUIクラスやデータクラスを、デバッグコンソール上で簡単に変数化できる
  
 ### 使い方
 #### UIコンポーネントを変数として出力
 1. consoleに`vinfo`を入力
-2. View Hierarchyの左サイドバーから任意のコンポーネントをコンソールにドラッグしてEnter
+2. View Hierarchyの左サイドバーから任意のコンポーネントをコンソールにドラッグして実行
 #### Memory Graphから任意のクラスを変数として出力
 1. consoleに`vinfo`を入力
-2. MemoryGraghの左サイドバーから任意のコンポーネントの**アドレス**をコンソールにドラッグしてEnter
+2. MemoryGraghの左サイドバーから任意のコンポーネントの**アドレス**をコンソールにドラッグして実行
   
 #### 基本的な使用例
 ```
 (lldb) vinfo ((UIViewController *)0x7f99a3823c00)  // ドラッグするとこの形で自動的に入力される。
-type lookup MewExample.MainViewController   // 型情報。この行をそのままコピーしてconsole上で実行すると型のもつメンバ➖も確認できる。
+type lookup MewExample.MainViewController   // 型情報。この行をそのままコピーしてコンソール上で実行すると型のもつメンバ➖も確認できる
 Use in swift context　 　　　　　　　　　　　　　// アクセス可能な言語コンテキストを表示
 $R170   　　　　　　　　　　　　　　　　　　　　　　// コンソールで使用できる変数
 
@@ -43,7 +42,7 @@ type lookup UIView
 Use in objc context
 $82
 
-(lldb) vinfo -s ((UIView *)0x7fc140713220)//  -sコマンドを使うことでSwiftの変数として出力される。
+(lldb) vinfo -s ((UIView *)0x7fc140713220)//  -sコマンドを使うことでSwiftの変数として出力される
 type lookup UIView
 UIView
 Use in swift context
