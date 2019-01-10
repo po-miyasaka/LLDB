@@ -98,13 +98,14 @@ def vinfo(debugger, command, result, internal_dict):
     elif not class_name_result.HasResult():
         raise AssertionError("")
     
-    class_name = class_name_result.GetOutput().strip()
+    class_name = class_name_result.GetOutput().strip().replace('-', '_')
     class_name_splited = re.split(r'(\.)', class_name)
     print("type lookup " + class_name)
     res = ""
     if len(class_name_splited) == 3 or options.is_for_swift: # Swift
         print(class_name)
-        import_exp = 'import {0}'.format(target.executable.basename)
+        module_name = target.executable.basename.replace('-', '_')
+        import_exp = 'import {0}'.format(module_name)
         exp_swift = 'unsafeBitCast({0}, to: {1}.self)'.format(address, class_name)
         res = frame.EvaluateExpression("{0};{1}".format(import_exp, exp_swift), swift_options)
         print("Use in swift context")
@@ -114,7 +115,7 @@ def vinfo(debugger, command, result, internal_dict):
     print(res.path)
 
 def vinfoOptionParser():
-    usage = "usage: %prog [options] breakpoint_query\n" +"Use 'vinfo -h' for option desc"
+    usage = "usage: %prog [options] breakpoint_query\n" + "Use 'vinfo -h' for option desc"
     parser = optparse.OptionParser(usage=usage, prog='b')
     parser.add_option("-s", "--for-swift", action="store_true", default=False, dest="is_for_swift", help="cast for swift")
     return parser
