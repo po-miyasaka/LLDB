@@ -13,7 +13,7 @@ command script import /<PATH>/pm_lldb_commands.py
 # custom_commands
 ## vinfo
 ### 概要
- * 現在メモリ上にあるUIコンポーネントやクラスに、デバッグコンソール上で簡単にアクセスできる。
+ * 現在メモリ上にあるUIクラスやデータクラスを、デバッグコンソール上で簡単に変数化できる。
  
 ### USAGE
 #### UIコンポーネントを変数として出力
