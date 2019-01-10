@@ -10,16 +10,23 @@ command script import /<PATH>/pm_lldb_commands.py
 # custom_commands
 ## vinfo
 ### 概要
- * 現在表示されているUIKitのコンポーネントにデバッグコンソール上で簡単にアクセスできる。
+ * 現在メモリ上にあるUIコンポーネントやクラスに、デバッグコンソール上で簡単にアクセスできる。
  
 ### USAGE
+#### UIコンポーネントを変数として出力
  * consoleに`vinfo`を入力
- * View Hierarchyから任意のコンポーネントをコンソールにドラッグして使用
- 
+ * View Hierarchyの左サイドバーから任意のコンポーネントをコンソールにドラッグしてEnter
+
+ * UIKitライブラリ内に実装されたコンポーネントはデフォルトでObjective-C用の変数として出力するが、
+   `-s`オプションを付与することで、Swiftの変数として出力することができる。
+#### Memory Graphから任意のクラスを変数として出力
+ * consoleに`vinfo`を入力
+ * MemoryGraghの左サイドバーから任意のコンポーネントをコンソールにドラッグしてEnter
+  
+#### 基本的な使い方
 ```
 (lldb) vinfo ((UIViewController *)0x7f99a3823c00)  // ドラッグするとこの形で自動的に入力される。
-type lookup MewExample.MainViewController   // 型情報。
-　　　　　　　　　　　　　　　　　　　　　　　　　　 // この行をコピーしてconsole上で実行すると型のもつメンバ➖も確認できる。
+type lookup MewExample.MainViewController   // 型情報。この行をそのままコピーしてconsole上で実行すると型のもつメンバ➖も確認できる。
 Use in swift context　 　　　　　　　　　　　　　// アクセス可能な言語コンテキストを表示
 $R170   　　　　　　　　　　　　　　　　　　　　　　// コンソールで使用できる変数
 
@@ -27,6 +34,21 @@ $R170   　　　　　　　　　　　　　　　　　　　　　　// コ
 ▿ Optional<UIView>   
   - some : <UIView: 0x7f99a3506d30; frame = (0 0; 375 667);    autoresize = W+H; layer = <CALayer: 0x60000240aec0>>    
 ```
+
+####  `-s`コマンドの使い方
+```
+(lldb) vinfo ((UIView *)0x7fc140713220) // UIKitライブラリに実装されたコンポーネントはデフォルトでObjective-Cの変数として出力される
+type lookup UIView
+Use in objc context
+$82
+
+(lldb) vinfo -s ((UIView *)0x7fc140713220)//  -sコマンドを使うことでSwiftの変数として出力される。
+type lookup UIView
+UIView
+Use in swift context
+$R84
+```
+
 
 ## enum_open
 ### 概要
