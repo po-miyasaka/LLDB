@@ -2,7 +2,7 @@
 アプリ開発で使えそうなLLDBコマンドを実装してます。  
 複数のコマンドを一つのファイル (`pm_lldb_commands.py`)にまとめてます。
 
-# import 
+# インポート方法
  *  `~/.lldbinit`ファイルを用意して以下を記載すると、  
  デバッグ時に各種コマンドが使えるようになります。(PATH部分は任意です。)
 ```
@@ -10,23 +10,23 @@ command script import /<PATH>/pm_lldb_commands.py
 ```
 
 	
-# custom_commands
-## vinfo
+# 各種コマンドについて
+## `vinfo`
 ### 概要
  * 現在メモリ上にあるUIクラスやデータクラスを、デバッグコンソール上で簡単に変数化できる。
  
-### USAGE
+### 使い方
 #### UIコンポーネントを変数として出力
- * consoleに`vinfo`を入力
- * View Hierarchyの左サイドバーから任意のコンポーネントをコンソールにドラッグしてEnter
+1. consoleに`vinfo`を入力
+2. View Hierarchyの左サイドバーから任意のコンポーネントをコンソールにドラッグしてEnter
 
- * UIKitライブラリ内に実装されたコンポーネントはデフォルトでObjective-C用の変数として出力するが、
+3. UIKitライブラリ内に実装されたコンポーネントはデフォルトでObjective-C用の変数として出力するが、
    `-s`オプションを付与することで、Swiftの変数として出力することができる。
 #### Memory Graphから任意のクラスを変数として出力
- * consoleに`vinfo`を入力
- * MemoryGraghの左サイドバーから任意のコンポーネントの**アドレス**をコンソールにドラッグしてEnter
+1. consoleに`vinfo`を入力
+2. MemoryGraghの左サイドバーから任意のコンポーネントの**アドレス**をコンソールにドラッグしてEnter
   
-#### 基本的な使い方
+#### 基本的な例
 ```
 (lldb) vinfo ((UIViewController *)0x7f99a3823c00)  // ドラッグするとこの形で自動的に入力される。
 type lookup MewExample.MainViewController   // 型情報。この行をそのままコピーしてconsole上で実行すると型のもつメンバ➖も確認できる。
@@ -38,7 +38,7 @@ $R170   　　　　　　　　　　　　　　　　　　　　　　// コ
   - some : <UIView: 0x7f99a3506d30; frame = (0 0; 375 667);    autoresize = W+H; layer = <CALayer: 0x60000240aec0>>    
 ```
 
-####  `-s`コマンドの使い方
+####  `-s`コマンドの使用例
 ```
 (lldb) vinfo ((UIView *)0x7fc140713220) // UIKitライブラリに実装されたコンポーネントはデフォルトでObjective-Cの変数として出力される
 type lookup UIView
@@ -58,7 +58,7 @@ $R84
  * コンソール上で簡単にenumの付属値を取り出す。
 	* 付属値が２つ以上の場合 Tupleとして取得できる。
 	
-### USAGE  
+### 使い方
  *  `enum_open` コマンドに enumの変数を渡す。
 	* インスタンスのメンバーの場合はself.をつける。
 	* Optional型の場合は強制アンラップする必要がある。  
@@ -80,11 +80,11 @@ $R140 // コンソールで使える変数
 ```
 
 
-## cbd
+## `cbd`
 ### 概要
 * current breakpoint (disable | delete)の略
 *  ブレークした時に実行すると、ブレークした原因となるBreakPointを無効にする
-### USAGE
+### 使い方
 * Options
 	* -d
 		* BreakPointを削除する 
@@ -108,5 +108,4 @@ $R140 // コンソールで使える変数
 ```
 
 # etc
-* Xcode9.4.1にて動作確認しました。
-* プロトタイプなのでバグがあります。使用は自己責任でお願いします。m(_ _)m
+* プロトタイプなのでバグがあります。使用は自己責任でお願いします。mm
