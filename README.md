@@ -50,7 +50,7 @@ $R84
 ```
 
 
-## enum_open
+## `enum_open`
 ### 概要
  * コンソール上で簡単にenumの付属値を取り出す。
 	* 付属値が２つ以上の場合 Tupleとして取得できる。
@@ -89,12 +89,12 @@ $R140 // コンソールで使える変数
 		* 実行後にプロセスを再開する。
 
 
-## preturn
+## `preturn`
 * メソッドの返り値の型がレジスタに格納できる値の場合に、任意の値にすることができる。ブレークポイントをONにしておく必要がある。
 <img width="1173" alt="screen shot 2018-09-02 at 9 53 18" src="https://user-images.githubusercontent.com/14083051/44951112-28f0d780-ae96-11e8-860d-0f0b844785e2.png">
 
 
-## cclet
+## `cclet`
  * Xcode10からStringの構造が変わったため使用不可
 	 * SwiftClassのletで定義された、任意のString型のメンバーの文字列を変更できる
 
