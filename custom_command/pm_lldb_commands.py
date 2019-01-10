@@ -62,6 +62,15 @@ def vinfo(debugger, command, result, internal_dict):
     '''
         Documentation for how to use vinfo goes here
         '''
+    command_args = shlex.split(command, posix=False)
+    parser = vinfoOptionParser()
+    
+    try:
+        (options, args) = parser.parse_args(command_args)
+    except:
+        result.SetError(parser.usage)
+        return
+    
     
     ### Debugger Info ###
     target = debugger.GetSelectedTarget()
@@ -76,9 +85,10 @@ def vinfo(debugger, command, result, internal_dict):
     objc_options_o = lldb.SBExpressionOptions()
     objc_options_o.SetLanguage(lldb.eLanguageTypeObjC)
     objc_options_o.SetCoerceResultToId()
+
     
     ### Command Parse###
-    address = re.match(r"^\(\(.+?\s?\)(.+)\)", command.strip()).groups()[0]
+    address = re.match(r"^\(\(.+?\s?\)(.+)\)", " ".join(args)).groups()[0]
     class_exp = '[{0} class]'.format(address)
     
     class_name_result = lldb.SBCommandReturnObject()
@@ -88,12 +98,12 @@ def vinfo(debugger, command, result, internal_dict):
     elif not class_name_result.HasResult():
         raise AssertionError("")
     
-    
     class_name = class_name_result.GetOutput().strip()
     class_name_splited = re.split(r'(\.)', class_name)
     print("type lookup " + class_name)
     res = ""
-    if len(class_name_splited) == 3: # Swift
+    if len(class_name_splited) == 3 or options.is_for_swift: # Swift
+        print(class_name)
         import_exp = 'import {0}'.format(target.executable.basename)
         exp_swift = 'unsafeBitCast({0}, to: {1}.self)'.format(address, class_name)
         res = frame.EvaluateExpression("{0};{1}".format(import_exp, exp_swift), swift_options)
@@ -103,6 +113,11 @@ def vinfo(debugger, command, result, internal_dict):
         print("Use in objc context")
     print(res.path)
 
+def vinfoOptionParser():
+    usage = "usage: %prog [options] breakpoint_query\n" +"Use 'vinfo -h' for option desc"
+    parser = optparse.OptionParser(usage=usage, prog='b')
+    parser.add_option("-s", "--for-swift", action="store_true", default=False, dest="is_for_swift", help="cast for swift")
+    return parser
 
 
 def enum_open(debugger, command, result, internal_dict):
@@ -198,7 +213,7 @@ def remove_label(str):
 
 def cbd(debugger, command, result, internal_dict):
     command_args = shlex.split(command, posix=False)
-    parser = generateOptionParser()
+    parser = cbdOptionParser()
 
     # template
     target = debugger.GetSelectedTarget()
@@ -237,20 +252,12 @@ def cbd(debugger, command, result, internal_dict):
         process.Continue()
     return True
 
-def generateOptionParser():
+def cbdOptionParser():
   usage = "usage: %prog [options] breakpoint_query\n" +"Use 'cbd -h' for option desc"
   parser = optparse.OptionParser(usage=usage, prog='b') 
   parser.add_option("-d", "--delete", action="store_true", default=False, dest="delete", help="delete breakpoint")
   parser.add_option("-c", "--continue", action="store_true", default=False, dest="conti", help="continue after excution")
   return parser
-
-
-def generateOptionParser():
-    usage = "usage: %prog [options] breakpoint_query\n" +"Use 'cbd -h' for option desc"
-    parser = optparse.OptionParser(usage=usage, prog='b')
-    parser.add_option("-d", "--delete", action="store_true", default=False, dest="delete", help="delete breakpoint")
-    parser.add_option("-c", "--continue", action="store_true", default=False, dest="conti", help="continue after excution")
-    return parser
 
 
 def preturn(debugger, command, result, internal_dict):
