@@ -21,7 +21,7 @@ command script import /<PATH>/pm_lldb_commands.py
    `-s`オプションを付与することで、Swiftの変数として出力することができる。
 #### Memory Graphから任意のクラスを変数として出力
  * consoleに`vinfo`を入力
- * MemoryGraghの左サイドバーから任意のコンポーネントをコンソールにドラッグしてEnter
+ * MemoryGraghの左サイドバーから任意のコンポーネントの**アドレス**をコンソールにドラッグしてEnter
   
 #### 基本的な使い方
 ```
