@@ -23,7 +23,7 @@ command script import /<PATH>/pm_lldb_commands.py
 1. consoleに`vinfo`を入力
 2. MemoryGraghの左サイドバーから任意のコンポーネントの**アドレス**をコンソールにドラッグしてEnter
   
-#### 基本的な例
+#### 基本的な使用例
 ```
 (lldb) vinfo ((UIViewController *)0x7f99a3823c00)  // ドラッグするとこの形で自動的に入力される。
 type lookup MewExample.MainViewController   // 型情報。この行をそのままコピーしてconsole上で実行すると型のもつメンバ➖も確認できる。
