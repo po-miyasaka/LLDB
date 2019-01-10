@@ -1,6 +1,8 @@
+# 概要
+アプリ開発で使えそうなLLDBコマンドを実装しています。
+複数のコマンドを一つのファイル (`pm_lldb_commands.py`)にまとめました。
 
-
-## import 
+# import 
  in `~/.lldbinit`
 ```
 command script import /<PATH>/pm_lldb_commands.py
