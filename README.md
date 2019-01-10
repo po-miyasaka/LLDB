@@ -3,9 +3,9 @@
 複数のコマンドを一つのファイル (`pm_lldb_commands.py`)にまとめてます。
 
 # import 
- * `~/.lldbinit`ファイルを用意して以下を記載すると、デバッグ時に各種コマンドが使えるようになります。
+ *  `~/.lldbinit`ファイルを用意して以下を記載すると、  
+ デバッグ時に各種コマンドが使えるようになります。(<PATH>部分は任意です。)
 ```
-# ※ <PATH>部分は任意です。
 command script import /<PATH>/pm_lldb_commands.py
 ```
 
