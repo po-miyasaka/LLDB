@@ -1,70 +1,31 @@
 import lldb
-import os
 import re
 import shlex
 import optparse
 
+
+
 def __lldb_init_module(debugger, internal_dict):
-    debugger.HandleCommand('command script add -f pm_lldb_commands.cclet cclet')
     debugger.HandleCommand('command script add -f pm_lldb_commands.vinfo vinfo')
+    debugger.HandleCommand('command script add -f pm_lldb_commands.cclet cclet')
     debugger.HandleCommand('command script add -f pm_lldb_commands.enum_open enum_open')
     debugger.HandleCommand('command script add -f pm_lldb_commands.cbd cbd')
     debugger.HandleCommand('command script add -f pm_lldb_commands.preturn preturn')
 
-def cclet(debugger, command, result, internal_dict):
-    
-    ### Command Parse ###
-    command_args = re.split(r'(\.|\=\s*)', command)
-    instance = command_args[0].strip()
-    member = command_args[2].strip()
-    new_value = command_args[4].strip()
-    new_value_length = len(new_value) -2
-    
-    print (new_value)
-    print (new_value_length)
-    ### Debugger Info ###
-    target = debugger.GetSelectedTarget()
-    process = target.GetProcess()
-    thread = process.GetSelectedThread()
-    frame = thread.GetSelectedFrame()
-    swift_options = lldb.SBExpressionOptions()
-    swift_options.SetLanguage(lldb.eLanguageTypeSwift)
-    objc_options = lldb.SBExpressionOptions()
-    objc_options.SetLanguage(lldb.eLanguageTypeObjC)
-    
-    objc_options_o = lldb.SBExpressionOptions()
-    objc_options_o.SetLanguage(lldb.eLanguageTypeObjC)
-    objc_options_o.SetCoerceResultToId()
-   
-    ###  extract instance & member ###
-    class_info_expression = '{}'.format(instance)
-    class_info = frame.EvaluateExpression(class_info_expression, swift_options)
-    member_info = class_info.GetValueForExpressionPath('.{}'.format(member))
-    member_string_addr = member_info.GetChildAtIndex(0).load_addr
-    
-    ### Change String Value ###
-    old_value_expression = '*(char**)({0})'.format(member_string_addr)
-    change_value_expression = "{0} = {1}".format(old_value_expression, new_value)
-    frame.EvaluateExpression(change_value_expression, objc_options_o)
-    
-    ### Change Length ###
-    
-    old_len_expression = '*(int*)({0})'.format(( member_info.GetChildAtIndex(0).GetChildAtIndex(1).location))
-    
-    change_len_expression = 'exp -l objc -o -- {0} = (int){1}'.format(old_len_expression, new_value_length)
-    debugger.HandleCommand(change_len_expression)
-    
-    result.AppendMessage('')
-
-
+    debugger.HandleCommand("command regex pc  's/(.*)?-op?(.*)/ exp -l objc++ %2 -- %1/'\
+                                              's/(.*)/ exp -l objc     -- %1/'")
+    debugger.HandleCommand("command regex poc 's/(.*)?-op?(.*)/ exp -l objc++ -O %2 -- %1/'\
+                                              's/(.*)/ exp -l objc  -O -- %1/'")
+    debugger.HandleCommand("command regex ps  's/(.*)?-op?(.*)/ exp -l swift     %2 -- %1/'\
+                                              's/(.*)/ exp -l swift    -- %1/'")
+    debugger.HandleCommand("command regex pos 's/(.*)?-op?(.*)/ exp -l swift -O  %2 -- %1/'\
+                                              's/(.*)/ exp -l swift -O -- %1/'")
 
 def vinfo(debugger, command, result, internal_dict):
-    '''
-        Documentation for how to use vinfo goes here
-        '''
+
     command_args = shlex.split(command, posix=False)
     parser = vinfoOptionParser()
-    
+
     try:
         (options, args) = parser.parse_args(command_args)
     except:
@@ -88,7 +49,14 @@ def vinfo(debugger, command, result, internal_dict):
 
     
     ### Command Parse###
-    address = re.match(r"^\(\(.+?\s?\)(.+)\)", " ".join(args)).groups()[0]
+    arg = " ".join(args)
+    matched = re.match(r"^\(\(.+?\s?\)(.+)\)", arg)
+
+    if matched:
+        address =matched.groups()[0]
+    else:
+        address = arg
+
     class_exp = '[{0} class]'.format(address)
     
     class_name_result = lldb.SBCommandReturnObject()
@@ -97,29 +65,85 @@ def vinfo(debugger, command, result, internal_dict):
         raise AssertionError(class_name_result.GetError())
     elif not class_name_result.HasResult():
         raise AssertionError("")
+
     
-    class_name = class_name_result.GetOutput().strip().replace('-', '_')
-    class_name_splited = re.split(r'(\.)', class_name)
-    print("type lookup " + class_name)
-    res = ""
-    if len(class_name_splited) == 3 or options.is_for_swift: # Swift
-        print(class_name)
-        module_name = target.executable.basename.replace('-', '_')
-        import_exp = 'import {0}'.format(module_name)
-        exp_swift = 'unsafeBitCast({0}, to: {1}.self)'.format(address, class_name)
-        res = frame.EvaluateExpression("{0};{1}".format(import_exp, exp_swift), swift_options)
-        print("Use in swift context")
-    else: # Objective-C
-        res = frame.EvaluateExpression("{0}".format(command), objc_options_o)
+    tmp_class_name = class_name_result.GetOutput().strip().replace('-', '_')
+    print(tmp_class_name)
+    demangle_name_result = lldb.SBCommandReturnObject()
+    debugger.GetCommandInterpreter().HandleCommand("language swift demangle {0} ".format(tmp_class_name), demangle_name_result)
+    if class_name_result.GetError():
+        class_name = tmp_class_name
+    elif not class_name_result.HasResult():
+        class_name = tmp_class_name
+    elif demangle_name_result.GetOutput() == None:
+        class_name = tmp_class_name
+    else:
+        tmp = demangle_name_result.GetOutput()
+        class_name = re.match(r"^.+?--->\s(.+)", tmp).groups()[0]
+
+    module_name = target.executable.basename.replace('-', '_')
+    import_exp = 'import {0};import UIKit;'.format(module_name)
+    exp_swift = 'unsafeBitCast({0}, to: {1}.self)'.format(address, class_name)
+    res = frame.EvaluateExpression("{0};{1}".format(import_exp, exp_swift), swift_options)
+    if not res.path or options.is_for_objc:
+        res = frame.EvaluateExpression("{0}".format(arg), objc_options_o)
         print("Use in objc context")
+        print("type lookup " + class_name)
+    else:
+        print("Use in swift context")
+        print("type lookup " + class_name + " ")
     print(res.path)
 
 def vinfoOptionParser():
     usage = "usage: %prog [options] breakpoint_query\n" + "Use 'vinfo -h' for option desc"
     parser = optparse.OptionParser(usage=usage, prog='b')
-    parser.add_option("-s", "--for-swift", action="store_true", default=False, dest="is_for_swift", help="cast for swift")
+    parser.add_option("-c", "--for-objc", action="store_true", default=False, dest="is_for_objc", help="cast for objc")
     return parser
 
+
+def cclet(debugger, command, result, internal_dict):
+    ### Command Parse ###
+    command_args = re.split(r'(\.|\=\s*)', command)
+    instance = command_args[0].strip()
+    member = command_args[2].strip()
+    new_value = command_args[4].strip()
+    new_value_length = len(new_value) - 2
+
+    print(new_value)
+    print(new_value_length)
+    ### Debugger Info ###
+    target = debugger.GetSelectedTarget()
+    process = target.GetProcess()
+    thread = process.GetSelectedThread()
+    frame = thread.GetSelectedFrame()
+    swift_options = lldb.SBExpressionOptions()
+    swift_options.SetLanguage(lldb.eLanguageTypeSwift)
+    objc_options = lldb.SBExpressionOptions()
+    objc_options.SetLanguage(lldb.eLanguageTypeObjC)
+
+    objc_options_o = lldb.SBExpressionOptions()
+    objc_options_o.SetLanguage(lldb.eLanguageTypeObjC)
+    objc_options_o.SetCoerceResultToId()
+
+    ###  extract instance & member ###
+    class_info_expression = '{}'.format(instance)
+    class_info = frame.EvaluateExpression(class_info_expression, swift_options)
+    member_info = class_info.GetValueForExpressionPath('.{}'.format(member))
+    member_string_addr = member_info.GetChildAtIndex(0).load_addr
+
+    ### Change String Value ###
+    old_value_expression = '*(char**)({0})'.format(member_string_addr)
+    change_value_expression = "{0} = {1}".format(old_value_expression, new_value)
+    frame.EvaluateExpression(change_value_expression, objc_options_o)
+
+    ### Change Length ###
+
+    old_len_expression = '*(int*)({0})'.format((member_info.GetChildAtIndex(0).GetChildAtIndex(1).location))
+
+    change_len_expression = 'exp -l objc -o -- {0} = (int){1}'.format(old_len_expression, new_value_length)
+    debugger.HandleCommand(change_len_expression)
+
+    result.AppendMessage('')
 
 def enum_open(debugger, command, result, internal_dict):
     
@@ -254,11 +278,11 @@ def cbd(debugger, command, result, internal_dict):
     return True
 
 def cbdOptionParser():
-  usage = "usage: %prog [options] breakpoint_query\n" +"Use 'cbd -h' for option desc"
-  parser = optparse.OptionParser(usage=usage, prog='b') 
-  parser.add_option("-d", "--delete", action="store_true", default=False, dest="delete", help="delete breakpoint")
-  parser.add_option("-c", "--continue", action="store_true", default=False, dest="conti", help="continue after excution")
-  return parser
+    usage = "usage: %prog [options] breakpoint_query\n" +"Use 'cbd -h' for option desc"
+    parser = optparse.OptionParser(usage=usage, prog='b')
+    parser.add_option("-d", "--delete", action="store_true", default=False, dest="delete", help="delete breakpoint")
+    parser.add_option("-c", "--continue", action="store_true", default=False, dest="conti", help="continue after excution")
+    return parser
 
 
 def preturn(debugger, command, result, internal_dict):
