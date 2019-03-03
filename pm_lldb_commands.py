@@ -43,10 +43,6 @@ def vinfo(debugger, command, result, internal_dict):
     objc_options = lldb.SBExpressionOptions()
     objc_options.SetLanguage(lldb.eLanguageTypeObjC)
     
-    objc_options_o = lldb.SBExpressionOptions()
-    objc_options_o.SetLanguage(lldb.eLanguageTypeObjC)
-    objc_options_o.SetCoerceResultToId()
-
     
     ### Command Parse###
     arg = " ".join(args)
@@ -78,20 +74,31 @@ def vinfo(debugger, command, result, internal_dict):
     elif demangle_name_result.GetOutput() == None:
         class_name = tmp_class_name
     else:
-        tmp = demangle_name_result.GetOutput()
-        class_name = re.match(r"^.+?--->\s(.+)", tmp).groups()[0]
-
+        demangle_class_name = demangle_name_result.GetOutput()
+        class_name = re.match(r"^.+?--->\s(.+)", demangle_class_name).groups()[0]
+    
     module_name = target.executable.basename.replace('-', '_')
     import_exp = 'import {0};import UIKit;'.format(module_name)
     exp_swift = 'unsafeBitCast({0}, to: {1}.self)'.format(address, class_name)
     res = frame.EvaluateExpression("{0};{1}".format(import_exp, exp_swift), swift_options)
+
     if not res.path or options.is_for_objc:
-        res = frame.EvaluateExpression("{0}".format(arg), objc_options_o)
+        tmp_val = frame.EvaluateExpression("{0}".format(arg), objc_options)
+        print(tmp_val)
+        type_name = tmp_val.GetDisplayTypeName()
+        if type_name == "long":
+            tmp_exp_objc = "(({0}*){1})".format(class_name, address) 
+            print(class_name)
+        else:
+            tmp_exp_objc = "(({0}){1})".format(type_name, address) 
+        res = frame.EvaluateExpression(tmp_exp_objc, objc_options)
         print("Use in objc context")
         print("type lookup " + class_name)
+
     else:
         print("Use in swift context")
         print("type lookup " + class_name + " ")
+
     print(res.path)
 
 def vinfoOptionParser():
