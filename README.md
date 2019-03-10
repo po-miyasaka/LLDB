@@ -1,20 +1,14 @@
-# 概要
-アプリ開発やデバッグ作業で使えそうなLLDBコマンドをまとめる。  
-複数のコマンドを一つのファイル (`pm_lldb_commands.py`)に実装している
+#  `vinfo`概要
+メモリ上にあるUIクラスやデータクラスを、デバッグコンソール上で簡単に変数化できる
 
 # インポート方法
 `~/.lldbinit`ファイルを用意して以下を記載する
 デバッグ時に各種コマンドが使えるようになる(PATH部分は任意)
 
 ```
-command script import /<PATH>/pm_lldb_commands.py
+command script import /<PATH>/vinfo.py
 ```
 
-# 各種コマンドについて
-## `vinfo`
-### 概要
-メモリ上にあるUIクラスやデータクラスを、デバッグコンソール上で簡単に変数化できる
- 
 ### 使い方
 #### UIコンポーネントを変数として出力
 1. consoleに`vinfo`を入力
