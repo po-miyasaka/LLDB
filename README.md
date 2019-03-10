@@ -27,8 +27,8 @@ command script import /<PATH>/pm_lldb_commands.py
 #### 基本的な使用例
 ```
 (lldb) vinfo ((UIViewController *)0x7f99a3823c00)  // ドラッグするとこの形で自動的に入力される。
-type lookup MewExample.MainViewController   // 型情報。この行をそのままコピーしてコンソール上で実行すると型のもつメンバ➖も確認できる
-Use in swift context　 　　　　　　　　　　　　　// アクセス可能な言語コンテキストを表示
+For Swift					// アクセス可能な言語コンテキストを表示
+type lookup MewExample.MainViewController   	// 型情報。この行をそのままコピーしてコンソール上で実行すると型のもつメンバ➖も確認できる　　　　　　　　　　　　
 $R170   　　　　　　　　　　　　　　　　　　　　　　// コンソールで使用できる変数
 
 (lldb) po $R170.view  
@@ -39,68 +39,12 @@ $R170   　　　　　　　　　　　　　　　　　　　　　　// コ
 #### Swiftの変数として出力する例
 ```
 (lldb) vinfo ((UIView *)0x7fc140713220) // UIKitライブラリに実装されたコンポーネントはデフォルトでObjective-Cの変数として出力される
+For Objc
 type lookup UIView
-Use in objc context
 $82
 
 (lldb) vinfo -s ((UIView *)0x7fc140713220)//  -sコマンドを使うことでSwiftの変数として出力される
+For Swift
 type lookup UIView
-UIView
-Use in swift context
 $R84
-```
-
-
-## `enum_open`
-### 概要
- * コンソール上で簡単にenumの付属値を取り出す。
-	* 付属値が２つ以上の場合 Tupleとして取得できる。
-	
-### 使い方
- *  `enum_open` コマンドに enumの変数を渡す。
-	* インスタンスのメンバーの場合はself.をつける。
-	* Optional型の場合は強制アンラップする必要がある。  
-	
-```
-(lldb) enum_open self.hogeEnum!
-Example.MainViewController.Testes.hogeEnum
-((MewExample.EnvironmentMock, (), Swift.String)) // 型情報
-$R140 // コンソールで使える変数
-
-(lldb) po $R140
-▿ 3 elements
-  - .0 : <EnvironmentMock: 0x600002645fa0>
-  - .1 : 0 elements
-  - .2 : "aaaaaaa"
-
-(lldb) po $R140.2
-"aaaaaaa"
-```
-
-
-## `cbd`
-### 概要
-* current breakpoint (disable | delete)の略
-*  ブレークした時に実行すると、ブレークした原因となるBreakPointを無効にする
-### 使い方
-* Options
-	* -d
-		* BreakPointを削除する 
-	* -c
-		* 実行後にプロセスを再開する。
-
-
-## `preturn`
-* メソッドの返り値の型がレジスタに格納できる値の場合に、任意の値にすることができる。ブレークポイントをONにしておく必要がある。
-<img width="1173" alt="screen shot 2018-09-02 at 9 53 18" src="https://user-images.githubusercontent.com/14083051/44951112-28f0d780-ae96-11e8-860d-0f0b844785e2.png">
-
-
-## `cclet`
- * Xcode10からStringの構造が変わったため使用不可
-	 * SwiftClassのletで定義された、任意のString型のメンバーの文字列を変更できる
-
-```
-(lldb) hogeInstance.str = "hogehoge"
-(lldb) hogeInstantce.str
-"hogehoge"
 ```
