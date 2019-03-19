@@ -56,11 +56,14 @@ class VariableInfoMaker:
         return target_module_name
 
     def import_module(self):
-        import_exp = 'import {0}; import {1}; import UIKit;'.format(self.target_module_name(), self.main_module_name())
+        target_module_name = self.target_module_name() 
+        import_exp = 'import {0}; import UIKit;'.format(self.main_module_name())
+        if target_module_name:
+            import_exp = import_exp + 'import {0}'.format(target_module_name)
         self.frame.EvaluateExpression("{0};".format(import_exp), self.swift_options)
 
     def generate_variable_swift(self):
-        exp_swift = 'unsafeBitCast({0}, to: {1}.self)'.format(self.address, self.class_name_swift())
+        exp_swift = 'unsafeBitCast({0}, to: {1}.self)'.format(self.address, self.class_name_swift().strip())
         variable_swift = self.frame.EvaluateExpression("{0}".format(exp_swift), self.swift_options)
         if variable_swift.path:
             return variable_swift
@@ -73,7 +76,6 @@ class VariableInfoMaker:
 
 
     def class_name_objc(self):
-        result = lldb.SBCommandReturnObject()
         exp = "pc (id){0} ".format(self.address)
         raw_result = self.expressionHandle(exp)
         class_name = re.match(r"^\((.+)?\).*", raw_result).groups()[0]
@@ -107,7 +109,7 @@ class VariableInfoMaker:
 
         variable_objc = self.generate_variable_objc()  
         print("For Objc")
-        print("type lookup " + self.class_name_objc())
+        print("type lookup " + self.class_name_objc().split(" ")[0])
         print(variable_objc.path)
         return
         
