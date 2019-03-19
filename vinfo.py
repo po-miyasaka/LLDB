@@ -50,9 +50,8 @@ class VariableInfoMaker:
         return module_name
 
     def target_module_name(self):
-        class_name_splited = self.class_name_swift().strip().split(".")
-        class_name_splited.pop()
-        target_module_name = ".".join(class_name_splited).replace('-', '_')
+        class_name_splited = self.class_name_swift().strip().split(".")[0]
+        target_module_name = class_name_splited.replace('-', '_')
         return target_module_name
 
     def import_module(self):
