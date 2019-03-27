@@ -46,11 +46,12 @@ $R170   　　　　　　　　　　　　　　　  // コンソールで使�
 以下のようにすることでブレーク時のフレームの言語設定に左右されずに各言語のコードが使用できる。   
 * Swiftのコードを実行する場合は`po`の代わりに`pos`を使用  
 * ObjC のコードを実行する場合は`po`の代わりに`poc`を使用  
-#### `pos`や`poc`にコマンドオプションを付与する
-以下のように `-op`のあとに任意のコマンドオプションを付与することができる。
+
+#### `pos`や`poc`にコマンドオプションを付与する  
+以下の例のように`-op`のあとに任意のコマンドオプションを付与することができる。  
+`pos hogeExpression -op -L`   
+`poc hogeExpression -op -F `  
 オプションの一覧は`help expression`で確認できる。
-`pos hogeExpression -op -L` 
-`poc hogeExpression -op -F `
 
 ## 動作環境
 `XCode10.0`以上
